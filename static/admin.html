@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>AX ADMIN PANEL</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root{--primary:#00ff88;--dark:#0f0f13;--card:rgba(255,255,255,.05);--border:rgba(255,255,255,.12);--red:#ff3355;--yellow:#ffc107}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Courier New',monospace}
+body{background:var(--dark);color:#fff;min-height:100vh;padding:15px}
+.wrap{max-width:760px;margin:0 auto}
+h1{text-align:center;color:var(--primary);text-shadow:0 0 10px var(--primary);font-size:20px;margin:10px 0 18px;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:15px}
+.card h3{color:var(--primary);font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+label{display:block;font-size:11px;color:#aaa;margin:10px 0 5px}
+input,select{width:100%;background:#000;border:1px solid var(--border);color:#fff;padding:11px;border-radius:8px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:var(--primary)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{cursor:pointer;border:none;border-radius:8px;padding:11px 14px;font-weight:700;font-size:12px}
+.btn{background:var(--primary);color:#000;width:100%;margin-top:14px;font-size:13px}
+.btn:disabled{opacity:.5}
+.sm{padding:7px 10px;font-size:11px;width:auto;margin:0}
+.b-edit{background:#2b6cff;color:#fff}.b-rst{background:var(--yellow);color:#000}.b-del{background:var(--red);color:#fff}
+.bot{background:#000;border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px}
+.bot-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.bot-name{font-weight:700;font-size:14px}
+.meta{font-size:11px;color:#999;margin-top:5px;line-height:1.6;word-break:break-all}
+.badge{font-size:10px;padding:3px 9px;border-radius:10px;font-weight:700;white-space:nowrap}
+.s-online{background:var(--primary);color:#000}.s-connecting{background:var(--yellow);color:#000}
+.s-error{background:var(--red);color:#fff}.s-offline{background:#555;color:#fff}
+.err{color:#ff7a8d;font-size:11px;margin-top:6px}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.srv{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #333;font-size:13px}
+.srv:last-child{border:none}
+.top{display:flex;justify-content:space-between;align-items:center}
+.msg{font-size:12px;margin-top:10px;min-height:16px}
+.ok{color:var(--primary)}.bad{color:#ff7a8d}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}
+.modal.show{display:flex}.modal .card{width:100%;max-width:420px;background:#14141b;margin:0}
+.hidden{display:none!important}
+.hint{font-size:10px;color:#777;margin-top:4px}
+
+/* ===== SOCIAL LIST WIDGET (Add Social Media button system) ===== */
+.sec-title{font-size:11px;color:var(--primary);letter-spacing:1px;margin:18px 0 6px;padding-top:12px;border-top:1px dashed #333;font-weight:700}
+.sec-title:first-of-type{border-top:none;padding-top:0;margin-top:6px}
+.sl-items{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.sl-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#000;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+.sl-info{min-width:0;flex:1}
+.sl-name{font-weight:700;font-size:13px;color:#fff;word-break:break-word}
+.sl-link{font-size:10px;color:#7fd4ff;word-break:break-all;margin-top:2px}
+.sl-btns{display:flex;gap:5px;flex:0 0 auto}
+.sl-btns button{padding:6px 9px;font-size:11px;border-radius:7px;width:auto;margin:0}
+.sl-empty{font-size:11px;color:#777;padding:6px 2px}
+.sl-form{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px}
+.sl-form label{margin-top:4px}
+.sl-form .row{margin-top:12px}
+.sl-ok{background:var(--primary);color:#000}.sl-cancel{background:#444;color:#fff}
+.sl-msg{margin-top:8px;min-height:14px}
+.tgl{display:flex;align-items:center;gap:10px;cursor:pointer;margin:6px 0 10px;font-size:12px;color:#ddd}
+.tgl input{display:none}
+.tgl-ui{width:46px;height:24px;border-radius:14px;background:#555;position:relative;transition:.2s;flex:0 0 auto}
+.tgl-ui::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.tgl input:checked + .tgl-ui{background:var(--primary)}
+.tgl input:checked + .tgl-ui::after{left:25px;background:#000}
+.tgl b{font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- LOGIN -->
+<div id="login-view" class="hidden">
+  <h1><i class="fas fa-user-shield"></i> ADMIN LOGIN</h1>
+  <div class="card">
+    <label>ADMIN PASSWORD</label>
+    <input type="password" id="pw" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="login-btn">LOGIN</button>
+    <div class="msg bad" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel-view" class="hidden">
+  <div class="top"><h1 style="margin:0" id="panel-title"><i class="fas fa-robot"></i> AX ADMIN PANEL</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <a id="clone-btn" class="sm b-rst hidden" style="text-decoration:none;display:inline-block;border-radius:8px;font-weight:700;font-size:11px;padding:7px 10px">🧬 AX EMOTE BOT CLONE</a>
+      <button class="sm b-del" id="logout-btn">LOGOUT</button>
+    </div></div>
+  <div class="card hidden" id="scope-banner" style="margin-top:12px;font-size:12px;line-height:1.7"></div>
+  <div style="height:15px"></div>
+
+  <!-- WEBSITE TASK / MAINTENANCE SETTINGS -->
+  <div class="card" id="site-card">
+    <h3><i class="fas fa-screwdriver-wrench"></i> WEBSITE TASK & MAINTENANCE</h3>
+
+    <div class="sec-title">USER TASK PAGE</div>
+    <label class="tgl"><input type="checkbox" id="site-tasks-on"><span class="tgl-ui"></span> TASK PAGE: <b id="site-tasks-state">ON</b></label>
+    <div id="task-widget"></div>
+    <div class="hint">TASK OFF করলে User কোনো টাস্ক ছাড়াই সরাসরি Main UI পাবে (লিংকগুলো মুছে যায় না, আবার ON করলে ফিরে আসবে)। প্রতিটি Add / Edit / Delete সঙ্গে সঙ্গে সেভ হয়।</div>
+
+    <div class="sec-title">MAINTENANCE MODE</div>
+    <label class="tgl"><input type="checkbox" id="site-maintenance"><span class="tgl-ui"></span> MAINTENANCE: <b id="site-maint-state">OFF</b></label>
+    <label>Maintenance / OFF Notice (বড় নোটিশ)</label>
+    <textarea id="site-notice" rows="3" placeholder="ওয়েবসাইটে সাময়িক রক্ষণাবেক্ষণের কাজ চলছে..." style="width:100%;background:#000;border:1px solid var(--border);color:#fff;padding:11px;border-radius:8px"></textarea>
+    <button class="btn" id="site-save" style="margin-top:10px"><i class="fas fa-save"></i> SAVE MAINTENANCE</button>
+
+    <div class="sec-title">MAINTENANCE SOCIAL MEDIA BUTTONS</div>
+    <div id="social-widget"></div>
+    <div class="hint">Maintenance পেইজে এই বাটনগুলো দেখাবে। প্রতিটি Add / Edit / Delete সঙ্গে সঙ্গে সেভ হয়।</div>
+    <div class="msg" id="site-msg"></div>
+  </div>
+
+  <!-- ORIGINAL WEBSITE SERVER MODE -->
+  <div class="card" id="login-mode-card">
+    <h3><i class="fas fa-right-to-bracket"></i> ORIGINAL USER WEBSITE LOGIN MODE</h3>
+    <label>ORIGINAL WEBSITE BOT CATEGORY</label>
+    <select id="auth-mode"><option value="manual">MANUAL GUEST UID + PASSWORD</option><option value="api">AUTO GUEST API</option><option value="json">JSON FILE GUEST</option></select>
+    <label class="tgl" style="margin-top:12px"><input type="checkbox" id="auto-leave"><span class="tgl-ui"></span> AUTO LEAVE AFTER EMOTE: <b id="auto-leave-state">ON</b></label>
+    <button class="btn" id="save-login-config" style="margin-top:10px"><i class="fas fa-save"></i> UPDATE CATEGORY</button>
+    <div class="msg" id="login-config-msg"></div>
+  </div>
+
+  <!-- SERVER-WISE GUEST API -->
+  <div class="card" id="guest-api-card">
+    <h3><i class="fas fa-link"></i> GUEST API SETTINGS</h3>
+    <label>SELECT SERVER</label><select id="api-server"></select>
+    <label>ACCOUNT NAME PREFIX</label><input id="api-name" maxlength="40" placeholder="AX-ROM">
+    <label>GUEST API URL</label><input id="api-url" placeholder="https://..." autocomplete="off">
+    <div class="hint">প্রতিটি Server-এর API URL আলাদাভাবে সেভ হবে। ফাঁকা রাখলে পুরোনো BD/IND API URL fallback হিসেবে ব্যবহৃত হবে।</div>
+    <button class="btn" id="save-api-config" style="margin-top:10px"><i class="fas fa-save"></i> SAVE GUEST API</button>
+    <div class="msg" id="api-config-msg"></div>
+    <div id="saved-api-list" class="hint" style="margin-top:10px"></div>
+  </div>
+
+  <!-- CLONE OWN-BOT AUTO LEAVE -->
+  <div class="card hidden" id="clone-auto-leave-card">
+    <h3><i class="fas fa-door-open"></i> CLONE BOT AUTO LEAVE</h3>
+    <label class="tgl"><input type="checkbox" id="clone-auto-leave"><span class="tgl-ui"></span> AUTO LEAVE AFTER EMOTE: <b id="clone-auto-leave-state">ON</b></label>
+    <button class="btn" id="save-clone-auto-leave" style="margin-top:10px"><i class="fas fa-save"></i> UPDATE AUTO LEAVE</button>
+    <div class="msg" id="clone-auto-leave-msg"></div>
+    <div class="hint">এই সেটিং শুধু এই Clone Website-এর নিজের Manual Guest Bot-গুলোর জন্য প্রযোজ্য।</div>
+  </div>
+
+  <!-- ORIGINAL ADMIN PASSWORD -->
+  <div class="card hidden" id="admin-password-card">
+    <h3><i class="fas fa-key"></i> CHANGE ADMIN PASSWORD</h3>
+    <label>CURRENT PASSWORD</label><input type="password" id="admin-current-password" autocomplete="current-password">
+    <label>NEW PASSWORD (MIN 8 CHARACTERS)</label><input type="password" id="admin-new-password" autocomplete="new-password">
+    <label>CONFIRM NEW PASSWORD</label><input type="password" id="admin-confirm-password" autocomplete="new-password">
+    <button class="btn" id="change-admin-password" style="margin-top:10px"><i class="fas fa-lock"></i> CHANGE PASSWORD</button>
+    <div class="msg" id="admin-password-msg"></div>
+  </div>
+
+  <!-- ADD BOT -->
+  <div class="card" id="add-card">
+    <h3><i class="fas fa-plus-circle"></i> ADD GUEST BOT</h3>
+    <label>1) SELECT SERVER</label>
+    <select id="bot-server"></select>
+    <label>2) BOT NAME (Main UI তে এই নামে দেখাবে)</label>
+    <input id="bot-name" placeholder="যেমন: AX BOT 1" maxlength="30">
+    <label>3) GUEST UID</label>
+    <input id="bot-uid" inputmode="numeric" placeholder="Guest UID" autocomplete="off">
+    <label>4) GUEST PASSWORD</label>
+    <input id="bot-pw" placeholder="Guest Password" autocomplete="off">
+    <button class="btn" id="start-btn"><i class="fas fa-play"></i> START BOT</button>
+    <div class="msg" id="add-msg"></div>
+  </div>
+
+  <!-- BOT LIST -->
+  <div class="card" id="bots-card">
+    <h3><i class="fas fa-list"></i> ALL BOTS <span id="bot-count" style="color:#aaa"></span></h3>
+    <div id="bot-list"></div>
+    <div id="json-active-section">
+      <h3 style="margin-top:18px"><i class="fas fa-file-code"></i> ACTIVE JSON POOL BOTS <span id="json-bot-count" style="color:#aaa"></span></h3>
+      <div id="json-bot-list"></div>
+    </div>
+  </div>
+
+  <!-- SERVERS -->
+  <div class="card" id="srv-card">
+    <h3><i class="fas fa-globe"></i> SERVERS</h3>
+    <div id="srv-list"></div>
+    <div id="json-pool-controls">
+      <div class="hint" style="margin:12px 0 6px">JSON Account Pool-এর জন্য Server নির্বাচন করে Guest Account JSON ফাইল সেভ করুন। Login Mode উপরের ORIGINAL USER WEBSITE LOGIN MODE থেকে নিয়ন্ত্রণ হবে।</div>
+      <label>JSON ACCOUNT FILE SERVER</label><select id="json-server"></select>
+      <input id="json-file" type="file" accept=".json,application/json" style="margin-top:8px">
+      <button class="btn" id="json-upload-btn" style="margin-top:8px"><i class="fas fa-file-arrow-up"></i> SAVE GUEST ACCOUNT</button>
+      <div class="msg" id="json-msg"></div>
+      <div class="row" style="margin-top:8px"><button class="b-rst" id="json-restart-all">RESTART ALL JSON BOTS</button><button class="b-del" id="json-delete-all">DELETE ALL JSON BOTS</button></div>
+    </div>
+    <label style="margin-top:14px">নতুন সার্ভার যোগ করুন</label>
+    <div class="row">
+      <select id="new-region"></select>
+    </div>
+    <input id="new-srv-name" placeholder="সার্ভারের নাম (যেমন: BANGLADESH 🇧🇩)" style="margin-top:8px" maxlength="40">
+    <button class="btn" id="add-srv-btn" style="margin-top:10px"><i class="fas fa-plus"></i> ADD SERVER</button>
+    <div class="msg" id="srv-msg"></div>
+  </div>
+
+  <!-- BACKUP / RESTORE -->
+  <div class="card" id="backup-card">
+    <h3><i class="fas fa-floppy-disk"></i> BACKUP / RESTORE</h3>
+    <div class="hint" style="margin-bottom:8px">সার্ভার restart হলে memory ফাঁকা হয় — এখান থেকে সব bot ও server একবারে ফিরিয়ে আনতে পারবেন। (কোনো ফাইল তৈরি হয় না)</div>
+    <div class="row">
+      <button class="b-edit" id="exp-btn"><i class="fas fa-download"></i> EXPORT (COPY)</button>
+      <button class="b-rst" id="imp-btn"><i class="fas fa-upload"></i> IMPORT</button>
+    </div>
+    <textarea id="backup-text" placeholder="Export করা JSON এখানে পেস্ট করে IMPORT চাপুন" style="width:100%;height:90px;margin-top:10px;background:#000;border:1px solid var(--border);color:#fff;border-radius:8px;padding:10px;font-size:11px;outline:none"></textarea>
+    <div class="msg" id="bk-msg"></div>
+  </div>
+</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="edit-modal">
+  <div class="card">
+    <h3><i class="fas fa-pen"></i> EDIT BOT</h3>
+    <input type="hidden" id="e-id">
+    <label>SERVER</label><select id="e-server"></select>
+    <label>BOT NAME</label><input id="e-name" maxlength="30">
+    <label>GUEST UID</label><input id="e-uid" inputmode="numeric">
+    <label>GUEST PASSWORD</label><input id="e-pw" placeholder="খালি রাখলে আগের password থাকবে">
+    <div class="hint">সেভ করলে bot নতুন তথ্য দিয়ে আবার চালু হবে।</div>
+    <div class="row" style="margin-top:14px">
+      <button class="b-del" id="e-cancel">CANCEL</button>
+      <button style="background:var(--primary);color:#000" id="e-save">SAVE</button>
+    </div>
+    <div class="msg" id="e-msg"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let STATE = null, timer = null;
+
+async function api(path, method='GET', body=null) {
+  const opt = {method, credentials:'same-origin', headers:{}};
+  if (body) { opt.headers['Content-Type']='application/json'; opt.body=JSON.stringify(body); }
+  const r = await fetch(BASE + path, opt);
+  let d = {}; try { d = await r.json(); } catch(e) {}
+  if (r.status === 401 && path !== '/api/login') { showLogin(); throw new Error('unauthorized'); }
+  return d;
+}
+const BASE = location.pathname.replace(/\/+$/,'');
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showLogin(){ clearInterval(timer); $('login-view').classList.remove('hidden'); $('panel-view').classList.add('hidden'); }
+function showPanel(){ $('login-view').classList.add('hidden'); $('panel-view').classList.remove('hidden'); }
+
+async function login(){
+  $('login-msg').textContent='';
+  $('login-btn').disabled = true;
+  try {
+    const d = await api('/api/login','POST',{password:$('pw').value});
+    if (d.ok) { $('pw').value=''; await refresh(); showPanel(); timer=setInterval(refresh,4000); }
+    else $('login-msg').textContent = d.error || 'Login failed';
+  } catch(e) {}
+  $('login-btn').disabled = false;
+}
+
+async function refresh(){
+  try {
+    const d = await api('/api/state');
+    if (!d.ok) return;
+    STATE = d; render();
+  } catch(e) {}
+}
+
+const STATUS_TXT = {online:'ONLINE', connecting:'CONNECTING', error:'PROBLEM / BAN?', offline:'OFFLINE'};
+
+function serverName(id){ const s=(STATE.servers||[]).find(x=>x.id===id); return s?s.name:'?'; }
+
+function applyScope(){
+  const clone = STATE.scope === 'clone';
+  $('clone-btn').classList.toggle('hidden', clone);
+  if (!clone) { $('clone-btn').href = BASE + '/clones'; }
+  if (clone) document.title = (STATE.clone_name || 'CLONE') + ' — ADMIN';
+  $('panel-title').innerHTML = clone ? '<i class="fas fa-robot"></i> ' + esc(STATE.clone_name) + ' — ADMIN' : '<i class="fas fa-robot"></i> AX ADMIN PANEL';
+  const ban = $('scope-banner'); let html = '';
+  if (clone && STATE.expires_at) {
+    const left = (STATE.expires_at*1000 - Date.now())/86400000;
+    html += '⏳ মেয়াদ শেষ: <b>' + new Date(STATE.expires_at*1000).toLocaleString() + '</b> (' + (left>0 ? left.toFixed(1)+' দিন বাকি' : 'শেষ') + ')<br>';
+  } else if (clone) { html += '⏳ মেয়াদ: <b>Unlimited</b><br>'; }
+  if (STATE.shared) html += '🔗 এই ওয়েবসাইট <b>অরিজিনাল সার্ভারের bot</b> ব্যবহার করছে — এখানে আলাদা bot/server যোগ করার দরকার নেই।';
+  ban.innerHTML = html; ban.classList.toggle('hidden', !html);
+  ['add-card','bots-card','srv-card','backup-card'].forEach(id => $(id).classList.toggle('hidden', !!STATE.shared));
+  $('login-mode-card').classList.toggle('hidden', clone);
+  $('guest-api-card').classList.toggle('hidden', clone);
+  $('admin-password-card').classList.toggle('hidden', clone);
+  $('clone-auto-leave-card').classList.toggle('hidden', !clone || !!STATE.shared);
+  $('json-active-section').classList.toggle('hidden', clone);
+  $('json-pool-controls').classList.toggle('hidden', clone);
+  if (clone && !STATE.shared) {
+    $('clone-auto-leave').checked = STATE.site?.auto_leave !== false;
+    $('clone-auto-leave-state').textContent = $('clone-auto-leave').checked ? 'ON' : 'OFF';
+  }
+}
+
+
+// ===== SOCIAL LIST WIDGET: "ADD" বাটন → নাম → লিংক → ADD (add / edit / delete) =====
+function makeSocialList(rootId, cfg){
+  const root = document.getElementById(rootId);
+  const MAX = cfg.max || 8;
+  let items = [], editIdx = -1;
+  root.innerHTML = `<div class="sl-items"></div>
+    <button type="button" class="sm b-edit sl-add">＋ ${cfg.addText}</button>
+    <div class="sl-form hidden">
+      <label>${cfg.nameLabel}</label>
+      <input type="text" class="sl-in-name" maxlength="40" placeholder="${cfg.namePh || ''}">
+      <label>${cfg.linkLabel}</label>
+      <input type="text" class="sl-in-link" maxlength="300" placeholder="https://...">
+      <div class="row"><button type="button" class="sl-cancel">CANCEL</button><button type="button" class="sl-ok">ADD</button></div>
+      <div class="msg sl-msg"></div>
+    </div>`;
+  const $q = s => root.querySelector(s);
+  const listEl = $q('.sl-items'), form = $q('.sl-form'), addBtn = $q('.sl-add');
+  const inName = $q('.sl-in-name'), inLink = $q('.sl-in-link'), okBtn = $q('.sl-ok'), msg = $q('.sl-msg');
+  const escH = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function draw(){
+    listEl.innerHTML = items.length ? items.map((x,i)=>`<div class="sl-item"><div class="sl-info"><div class="sl-name">${escH(x.name)}</div><div class="sl-link">${escH(x.link)}</div></div>
+      <div class="sl-btns"><button type="button" class="b-edit" data-e="${i}" title="Edit">✎</button><button type="button" class="b-del" data-d="${i}" title="Delete">✕</button></div></div>`).join('')
+      : `<div class="sl-empty">${cfg.emptyText || 'এখনো কিছু যোগ করা হয়নি'}</div>`;
+    addBtn.classList.toggle('hidden', items.length >= MAX || !form.classList.contains('hidden'));
+  }
+  function openForm(i){
+    editIdx = i;
+    inName.value = i>=0 ? items[i].name : ''; inLink.value = i>=0 ? items[i].link : '';
+    okBtn.textContent = i>=0 ? 'SAVE' : 'ADD'; msg.textContent = '';
+    form.classList.remove('hidden'); addBtn.classList.add('hidden'); inName.focus();
+  }
+  function closeForm(){ form.classList.add('hidden'); editIdx = -1; draw(); }
+
+  async function commit(next){
+    const prev = items; items = next; draw();
+    if (cfg.onChange) {
+      const ok = await cfg.onChange(items.map(x=>({name:x.name, link:x.link})));
+      if (ok === false) { items = prev; draw(); }
+    }
+  }
+  addBtn.onclick = () => openForm(-1);
+  $q('.sl-cancel').onclick = closeForm;
+  okBtn.onclick = async () => {
+    const name = inName.value.trim(), link = inLink.value.trim();
+    if (!name) { msg.className='msg sl-msg bad'; msg.textContent='নাম দিন'; return; }
+    if (!/^https?:\/\/[^\s'"<>\\]{3,300}$/.test(link)) { msg.className='msg sl-msg bad'; msg.textContent='সঠিক লিংক দিন (https:// দিয়ে শুরু)'; return; }
+    const next = items.slice();
+    if (editIdx >= 0) next[editIdx] = {name, link}; else next.push({name, link});
+    form.classList.add('hidden'); editIdx = -1;
+    await commit(next);
+  };
+  listEl.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.e !== undefined) openForm(+b.dataset.e);
+    else if (b.dataset.d !== undefined) { if (confirm('এটি মুছে ফেলবেন?')) commit(items.filter((_,i)=>i!==+b.dataset.d)); }
+  };
+  draw();
+  return {
+    set(list){ if (!form.classList.contains('hidden')) return; items = (list||[]).map(x=>({name:x.name, link:x.link})); draw(); },
+    get(){ return items.slice(); }
+  };
+}
+
+let TASKW = null, SOCW = null;
+function initSiteWidgets(){
+  TASKW = makeSocialList('task-widget', {addText:'ADD TASK LINK', nameLabel:'TASK NAME', namePh:'যেমন: JOIN TELEGRAM', linkLabel:'TASK LINK', emptyText:'কোনো টাস্ক লিংক নেই',
+    onChange: items => saveSitePart({tasks: items})});
+  SOCW = makeSocialList('social-widget', {addText:'ADD SOCIAL MEDIA', nameLabel:'SOCIAL MEDIA NAME', namePh:'যেমন: TELEGRAM / YOUTUBE', linkLabel:'LINK', emptyText:'কোনো Social Media বাটন নেই',
+    onChange: items => saveSitePart({social_links: items})});
+}
+async function saveSitePart(body){
+  const m=$('site-msg'); m.className='msg'; m.textContent='';
+  try {
+    const d = await api('/api/site','PUT',body);
+    if (d.ok) { m.className='msg ok'; m.textContent='✔ সেভ হয়েছে'; if (d.site) STATE.site = d.site; return true; }
+    m.className='msg bad'; m.textContent = d.error || 'Save failed'; refresh(); return false;
+  } catch(e) { return false; }
+}
+function updateSiteToggles(){
+  $('site-tasks-state').textContent = $('site-tasks-on').checked ? 'ON' : 'OFF';
+  $('site-maint-state').textContent = $('site-maintenance').checked ? 'ON' : 'OFF';
+}
+async function saveMaintenance(){
+  const ok = await saveSitePart({maintenance:$('site-maintenance').checked, notice:$('site-notice').value});
+  if (ok) $('site-msg').textContent = '✔ Maintenance সেভ হয়েছে';
+}
+
+function render(){
+  applyScope();
+  if(STATE.site){
+    const ae = document.activeElement && document.activeElement.id;
+    if(!['site-notice'].includes(ae)){ $('site-notice').value = STATE.site.notice || ''; }
+    $('site-maintenance').checked = STATE.site.maintenance === 'on';
+    $('site-tasks-on').checked = STATE.site.tasks_enabled !== false;
+    updateSiteToggles();
+    if(TASKW) TASKW.set(STATE.site.tasks || []);
+    if(SOCW) SOCW.set(STATE.site.social_links || []);
+    $('api-name').value = STATE.site.api_name || 'AX-ROM';
+  }
+
+  // server dropdowns (add form keeps selection)
+  const cur = $('bot-server').value;
+  const opts = STATE.servers.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  $('bot-server').innerHTML = opts || '<option value="">— আগে সার্ভার যোগ করুন —</option>';
+  if (cur) $('bot-server').value = cur;
+  const apiCur=$('api-server').value;
+  const serverOpts=STATE.servers.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  $('api-server').innerHTML=serverOpts;
+  if(apiCur) $('api-server').value=apiCur;
+  if(!['auth-mode','auto-leave'].includes(document.activeElement?.id)){ $('auth-mode').value=STATE.site?.auth_mode || 'manual'; $('auto-leave').checked=STATE.site?.auto_leave !== false; }
+  const selectedApiServer=STATE.servers.find(s=>s.id===$('api-server').value) || STATE.servers[0];
+  if(selectedApiServer){ $('api-server').value=selectedApiServer.id; if(!['api-url','api-name'].includes(document.activeElement?.id)) $('api-url').value=selectedApiServer.api_url || (STATE.site?.api_urls||{})[selectedApiServer.region] || ''; }
+  const savedApis=(STATE.servers||[]).filter(s=>s.api_url);
+  $('saved-api-list').innerHTML=savedApis.length ? '<b>SAVED SERVER API</b><br>'+savedApis.map(s=>`${esc(s.name)}: <code>${esc(s.api_url)}</code>`).join('<br>') : 'এখনো কোনো Server API Save করা হয়নি।';
+  $('auto-leave-state').textContent=$('auto-leave').checked?'ON':'OFF';
+  if (!$('new-region').options.length)
+    $('new-region').innerHTML = STATE.regions.map(r=>`<option value="${r.code}" data-label="${esc(r.label)}">${esc(r.label)} (${r.code})</option>`).join('');
+
+  // bots
+  const manualBots=STATE.bots.filter(b=>b.source!=='json'); const jsonBots=STATE.bots.filter(b=>b.source==='json');
+  $('bot-count').textContent = `(${manualBots.length})`; $('json-bot-count').textContent=`(${jsonBots.length})`;
+  $('bot-list').innerHTML = manualBots.length ? manualBots.map(b=>`
+    <div class="bot">
+      <div class="bot-top">
+        <span class="bot-name"><i class="fas fa-robot" style="color:var(--primary)"></i> ${esc(b.name)}</span>
+        <span class="badge s-${esc(b.status)}">${STATUS_TXT[b.status]||esc(b.status)}</span>
+      </div>
+      <div class="meta">SERVER: ${esc(serverName(b.server_id))}<br>
+        GUEST UID: ${esc(b.uid)}${b.bot_uid?` &nbsp;|&nbsp; GAME UID: ${esc(b.bot_uid)}`:''}
+        ${b.team_code?` &nbsp;|&nbsp; TEAM CODE: <b>${esc(b.team_code)}</b> <button class="sm b-edit" onclick="copyTeamCode('${esc(b.team_code)}')">COPY</button>`:''}
+        ${b.remaining_seconds!==null && b.remaining_seconds!==undefined?` &nbsp;|&nbsp; TIME LEFT: ${Math.floor(b.remaining_seconds/60)}m ${b.remaining_seconds%60}s`:''}
+        ${b.queue?` &nbsp;|&nbsp; QUEUE: ${b.queue}`:''}${b.restarts?` &nbsp;|&nbsp; RESTARTS: ${b.restarts}`:''}</div>
+      ${b.error && b.status!=='online' ? `<div class="err"><i class="fas fa-triangle-exclamation"></i> ${esc(b.error)}</div>`:''}
+      <div class="acts">
+        <button class="sm b-edit" onclick="openEdit('${esc(b.id)}')"><i class="fas fa-pen"></i> EDIT</button>
+        <button class="sm b-rst" onclick="restartBot('${esc(b.id)}')"><i class="fas fa-rotate"></i> RESTART</button>
+        <button class="sm b-del" onclick="delBot('${esc(b.id)}','${esc(b.name)}')"><i class="fas fa-trash"></i> DELETE</button>
+      </div>
+    </div>`).join('') : '<div class="meta">কোনো Manual/API bot নেই।</div>';
+  $('json-bot-list').innerHTML = jsonBots.length ? jsonBots.map(b=>`
+    <div class="bot"><div class="bot-top"><span class="bot-name"><i class="fas fa-file-code" style="color:var(--primary)"></i> ${esc(b.name)}</span><span class="badge s-${esc(b.status)}">${STATUS_TXT[b.status]||esc(b.status)}</span></div>
+    <div class="meta">SERVER: ${esc(serverName(b.server_id))}<br>UID: ${esc(b.uid)} ${b.team_code?` | TEAM CODE: <b>${esc(b.team_code)}</b> <button class="sm b-edit" onclick="copyTeamCode('${esc(b.team_code)}')">COPY</button>`:''}<br>${b.remaining_seconds!==null&&b.remaining_seconds!==undefined?`TIME LEFT: ${Math.floor(b.remaining_seconds/60)}m ${b.remaining_seconds%60}s`:'WAITING FOR CONNECTION'}${b.error?`<div class="err">${esc(b.error)}</div>`:''}</div>
+    <div class="acts"><button class="sm b-edit" onclick="openEdit('${esc(b.id)}')">EDIT</button><button class="sm b-rst" onclick="restartBot('${esc(b.id)}')">RESTART</button><button class="sm b-del" onclick="delBot('${esc(b.id)}','${esc(b.name)}')">DELETE</button></div></div>`).join(''):'<div class="meta">কোনো active JSON bot নেই।</div>';
+
+  // servers
+  $('srv-list').innerHTML = STATE.servers.map(s=>{
+    const n = STATE.bots.filter(b=>b.server_id===s.id).length;
+    const jc=(STATE.json_pool_counts||{})[s.id]||{total:0,active:0,available:0};
+    return `<div class="srv" style="align-items:flex-start;gap:8px"><div style="flex:1"><b>${esc(s.name)}</b> <span style="color:#777;font-size:10px">[${esc(s.region)}] • ${n} active</span>
+      <div class="meta">LOGIN: ${((STATE.scope==='clone'?STATE.public_auth_mode:STATE.site.auth_mode)||'manual').toUpperCase()}${STATE.scope==='clone'?'':` • JSON: ${jc.total} saved • ${jc.active} active • ${jc.available} available`}</div></div>
+      <button class="sm b-del" onclick="delServer('${esc(s.id)}')"><i class="fas fa-trash"></i></button></div>`;
+  }).join('') || '<div class="meta">কোনো সার্ভার নেই</div>';
+  const jcur=$('json-server').value; $('json-server').innerHTML=STATE.servers.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''); if(jcur) $('json-server').value=jcur;
+}
+
+async function addBot(){
+  const m = $('add-msg'); m.className='msg'; m.textContent='';
+  $('start-btn').disabled = true;
+  try {
+    const d = await api('/api/bots','POST',{server_id:$('bot-server').value,name:$('bot-name').value,uid:$('bot-uid').value,password:$('bot-pw').value});
+    if (d.ok) { m.className='msg ok'; m.textContent='✔ Bot যোগ হয়েছে, চালু হচ্ছে...';
+      $('bot-name').value=''; $('bot-uid').value=''; $('bot-pw').value=''; refresh(); }
+    else { m.className='msg bad'; m.textContent = d.error||'Error'; }
+  } catch(e) {}
+  $('start-btn').disabled = false;
+}
+
+function openEdit(id){
+  const b = STATE.bots.find(x=>x.id===id); if(!b) return;
+  $('e-id').value=id; $('e-name').value=b.name; $('e-uid').value=b.uid; $('e-pw').value='';
+  $('e-server').innerHTML = STATE.servers.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  $('e-server').value=b.server_id; $('e-msg').textContent='';
+  $('edit-modal').classList.add('show');
+}
+async function saveEdit(){
+  const body={server_id:$('e-server').value,name:$('e-name').value,uid:$('e-uid').value};
+  if($('e-pw').value) body.password=$('e-pw').value;
+  const d = await api('/api/bots/'+$('e-id').value,'PUT',body);
+  if(d.ok){ $('edit-modal').classList.remove('show'); refresh(); }
+  else { $('e-msg').className='msg bad'; $('e-msg').textContent=d.error||'Error'; }
+}
+async function restartBot(id){ await api('/api/bots/'+id+'/restart','POST'); refresh(); }
+async function delBot(id,name){
+  if(!confirm(`"${name}" বট একেবারে ডিলেট করবেন? Main UI থেকেও মুছে যাবে।`)) return;
+  const d = await api('/api/bots/'+id,'DELETE'); if(!d.ok) alert(d.error||'Error'); refresh();
+}
+async function addServer(){
+  const m=$('srv-msg'); m.className='msg'; m.textContent='';
+  const d = await api('/api/servers','POST',{name:$('new-srv-name').value,region:$('new-region').value});
+  if(d.ok){ $('new-srv-name').value=''; m.className='msg ok'; m.textContent='✔ সার্ভার যোগ হয়েছে'; refresh(); }
+  else { m.className='msg bad'; m.textContent=d.error||'Error'; }
+}
+async function delServer(id){
+  if(!confirm('এই সার্ভার ডিলেট করবেন?')) return;
+  const d = await api('/api/servers/'+id,'DELETE'); if(!d.ok) alert(d.error||'Error'); refresh();
+}
+
+initSiteWidgets();
+$('site-save').onclick = saveMaintenance;
+
+$('site-tasks-on').onchange = async () => { updateSiteToggles(); const ok = await saveSitePart({tasks_enabled:$('site-tasks-on').checked}); if(!ok) refresh(); };
+$('site-maintenance').onchange = updateSiteToggles;
+$('login-btn').onclick = login;
+$('pw').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+$('logout-btn').onclick = async()=>{ await api('/api/logout','POST'); showLogin(); };
+async function updateOriginalServerMode(){
+  const mode=$('auth-mode').value, auto_leave=$('auto-leave').checked, msg=$('login-config-msg');
+  const d=await api('/api/site','PUT',{auth_mode:mode,auto_leave});
+  msg.className=d.ok?'msg ok':'msg bad'; msg.textContent=d.ok?'✔ Original Website category and Auto Leave updated':(d.error||'Update failed');
+  if(d.ok) refresh();
+}
+async function saveServerApi(){
+  const id=$('api-server').value, msg=$('api-config-msg');
+  const cfg=await api('/api/site','PUT',{api_name:$('api-name').value});
+  if(!cfg.ok){msg.className='msg bad';msg.textContent=cfg.error||'API name save failed';return;}
+  const d=await api('/api/servers/'+encodeURIComponent(id)+'/api-config','PUT',{api_url:$('api-url').value});
+  msg.className=d.ok?'msg ok':'msg bad'; msg.textContent=d.ok?'✔ Guest API URL saved for selected server':(d.error||'Save failed');
+  if(d.ok) refresh();
+}
+function copyTeamCode(code){navigator.clipboard.writeText(String(code)).then(()=>alert('Team Code copied')).catch(()=>alert(code));}
+async function uploadJsonAccounts(){
+  const file=$('json-file').files[0], msg=$('json-msg'); if(!file){msg.className='msg bad';msg.textContent='JSON file নির্বাচন করুন';return;}
+  try{
+    const raw=JSON.parse(await file.text()); const accounts=Array.isArray(raw)?raw:raw.accounts;
+    if(!Array.isArray(accounts)) throw new Error('Format: {"accounts":[{"uid":"...","password":"..."}]}');
+    const d=await api('/api/json-accounts','POST',{server_id:$('json-server').value,accounts});
+    msg.className=d.ok?'msg ok':'msg bad'; msg.textContent=d.ok?`✔ ${d.count} accounts saved for selected server`:d.error||'Upload failed'; refresh();
+  }catch(e){msg.className='msg bad';msg.textContent=e.message||'Invalid JSON file';}
+}
+async function jsonBulk(action){if(!confirm(action==='delete'?'সব active JSON bot delete করবেন?':'সব active JSON bot restart করবেন?'))return;const d=await api('/api/json-bots/bulk','POST',{action});alert(d.ok?`${d.count} JSON bot ${action} queued`:d.error||'Failed');refresh();}
+async function saveCloneAutoLeave(){
+  const msg=$('clone-auto-leave-msg');
+  const d=await api('/api/site','PUT',{auto_leave:$('clone-auto-leave').checked});
+  msg.className=d.ok?'msg ok':'msg bad'; msg.textContent=d.ok?'✔ Clone Auto Leave updated':(d.error||'Update failed');
+  if(d.ok) refresh();
+}
+async function changeAdminPassword(){
+  const msg=$('admin-password-msg');
+  const body={current_password:$('admin-current-password').value,new_password:$('admin-new-password').value,confirm_password:$('admin-confirm-password').value};
+  const d=await api('/api/password-change','POST',body);
+  msg.className=d.ok?'msg ok':'msg bad'; msg.textContent=d.ok?'✔ Admin Password changed successfully':(d.error||'Password change failed');
+  if(d.ok){$('admin-current-password').value='';$('admin-new-password').value='';$('admin-confirm-password').value='';}
+}
+$('clone-auto-leave').addEventListener('change',()=>{$('clone-auto-leave-state').textContent=$('clone-auto-leave').checked?'ON':'OFF';});
+$('save-clone-auto-leave').onclick=saveCloneAutoLeave;
+$('change-admin-password').onclick=changeAdminPassword;
+$('save-login-config').onclick=updateOriginalServerMode;
+$('auto-leave').addEventListener('change',()=>{$('auto-leave-state').textContent=$('auto-leave').checked?'ON':'OFF';});
+$('save-api-config').onclick=saveServerApi;
+$('api-server').addEventListener('change',()=>{const srv=STATE.servers.find(x=>x.id===$('api-server').value);if(srv){$('api-url').value=srv.api_url||(STATE.site?.api_urls||{})[srv.region]||'';}});
+$('json-upload-btn').onclick=uploadJsonAccounts;
+$('json-restart-all').onclick=()=>jsonBulk('restart');
+$('json-delete-all').onclick=()=>jsonBulk('delete');
+$('start-btn').onclick = addBot;
+$('add-srv-btn').onclick = addServer;
+$('e-cancel').onclick = ()=>$('edit-modal').classList.remove('show');
+$('e-save').onclick = saveEdit;
+$('new-region').addEventListener('change',()=>{ const o=$('new-region').selectedOptions[0]; if(o && !$('new-srv-name').value) $('new-srv-name').value=o.dataset.label; });
+
+
+async function exportBackup(){
+  const d = await api('/api/export'); const t = JSON.stringify(d);
+  $('backup-text').value = t;
+  try { await navigator.clipboard.writeText(t); $('bk-msg').className='msg ok'; $('bk-msg').textContent='✔ কপি হয়েছে — নিরাপদ জায়গায় রাখুন (এতে password আছে)'; }
+  catch(e) { $('bk-msg').className='msg ok'; $('bk-msg').textContent='উপরের বক্সের লেখাটি কপি করে রাখুন (এতে password আছে)'; }
+}
+async function importBackup(){
+  let obj; try { obj = JSON.parse($('backup-text').value); } catch(e) { $('bk-msg').className='msg bad'; $('bk-msg').textContent='ভুল JSON'; return; }
+  if(!confirm('বর্তমান সব bot/server মুছে এই backup দিয়ে বদলানো হবে। চালিয়ে যাবেন?')) return;
+  const d = await api('/api/import','POST',obj);
+  if(d.ok){ $('bk-msg').className='msg ok'; $('bk-msg').textContent=`✔ ${d.servers} server, ${d.bots} bot ফিরিয়ে আনা হয়েছে`; $('backup-text').value=''; refresh(); }
+  else { $('bk-msg').className='msg bad'; $('bk-msg').textContent=d.error||'Error'; }
+}
+$('exp-btn').onclick = exportBackup;
+$('imp-btn').onclick = importBackup;
+
+// start: already logged in?
+(async()=>{ try{ const d=await api('/api/state'); if(d.ok){ STATE=d; render(); showPanel(); timer=setInterval(refresh,4000); return; } }catch(e){} showLogin(); })();
+</script>
+</body>
+</html>

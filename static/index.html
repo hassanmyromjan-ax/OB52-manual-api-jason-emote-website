@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AX EMOTE SERVER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) return false;
+        }
+    </script>
+</head>
+<body>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-icon">
+                <span>{</span>
+                <span>}</span>
+            </div>
+            <h2 class="loading-title">Sending Emote</h2>
+            <p class="loading-subtitle">Processing your request to the API server</p>
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="loading-status" id="loading-status">Preparing to send...</div>
+        </div>
+    </div>
+
+    <!-- MAINTENANCE OVERLAY -->
+    <div id="maintenance-overlay" class="overlay hidden">
+        <i class="fas fa-tools fa-3x" style="color:#ff0055;margin-bottom:15px;"></i>
+        <h2>ইমোট ওয়েবসাইট আপডেট চলছে, খুব শীঘ্রই ঠিক করা হবে</h2>
+        <p>Updating servers... Please wait.</p>
+        <a href="#" id="maint-telegram-btn" class="task-btn">JOIN TELEGRAM</a>
+    </div>
+
+    <!-- LOCK/VERIFY OVERLAY -->
+    <div id="lock-overlay" class="overlay">
+        <i class="fas fa-shield-alt fa-3x" style="color:var(--primary);margin-bottom:15px;"></i>
+        <h2>AX EMOTE SERVER UNLOCK 🔓</h2>
+        <p style="color:#aaa;font-size:12px;margin-bottom:20px;">COMPLETE ALL TASKS TO UNLOCK</p>
+        <div id="task-list" style="width:100%;display:flex;flex-direction:column;align-items:center;"></div>
+        <button id="check-unlock-btn" class="unlock-btn">VERIFY &amp; ENTER</button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container" id="main-container" style="display:none;">
+        <header><h1>AX EMOTE SERVER</h1></header>
+
+        <!-- VISIT COUNTER -->
+        <div id="visit-count-box" class="card" style="margin-bottom:15px;padding:10px 15px;display:flex;align-items:center;justify-content:space-around;gap:10px;font-size:13px;">
+            <span><i class="fas fa-users"></i> Total: <b style="color:var(--primary);">...</b></span>
+            <span><i class="fas fa-calendar-day"></i> আজ: <b style="color:var(--primary);">...</b></span>
+        </div>
+
+        <!-- SELECTED BOT BAR -->
+        <div id="bot-status-bar" class="card" style="margin-bottom:15px;padding:10px 15px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:12px;color:#aaa;">
+                <i class="fas fa-robot" style="color:var(--primary);"></i>
+                BOT: <span id="display-bot-name" style="color:var(--primary);font-weight:700;">NOT SELECTED</span>
+            </div>
+            <span id="bot-online-badge" class="bot-badge off">—</span>
+        </div>
+
+        <!-- TERMINAL -->
+        <div id="terminal" class="terminal-card" style="display:none;">
+            <div style="border-bottom:1px dashed #333;margin-bottom:5px;color:#fff;font-size:10px;">root@sakib-server:~# injecting_payload</div>
+            <div id="terminal-content"></div>
+        </div>
+
+        <!-- SERVER SELECT + API RUN CONTROLS -->
+        <div class="card dd-card" id="server-card">
+            <label class="blood-title"><i class="fas fa-globe"></i> SERVER</label>
+            <div class="server-control-row">
+                <div class="dd" id="server-dd">
+                    <div class="dd-trigger server-select-trigger" id="server-trigger" onclick="toggleDD('server')">
+                        <span class="dd-text" id="server-trigger-text">SELECT SERVER</span>
+                        <i class="fas fa-chevron-down dd-arrow"></i>
+                    </div>
+                    <div class="dd-list" id="server-list-container"></div>
+                </div>
+            </div>
+            <div class="server-action-stack">
+                <button class="unlock-btn server-action-btn blood-action-btn" id="save-server-btn" type="button" style="display:none;">START BOT</button>
+                <button class="unlock-btn server-action-btn blood-action-btn" id="logout-server-btn" type="button" style="display:none;">LOGOUT BOT</button>
+            </div>
+            <div id="save-server-status" class="api-status-panel" style="display:none;" aria-live="polite">SELECT A SERVER</div>
+        </div>
+
+        <!-- BOT SELECT (dropdown) -->
+        <div class="card dd-card" id="bot-card" style="display:none;">
+            <label class="blood-title"><i class="fas fa-robot"></i> BOT</label>
+            <div class="dd" id="bot-dd">
+                <div class="dd-trigger" id="bot-trigger" onclick="toggleDD('bot')">
+                    <span class="dd-text" id="bot-trigger-text">SELECT BOT</span>
+                    <i class="fas fa-chevron-down dd-arrow"></i>
+                </div>
+                <div class="dd-list" id="bot-list-container"></div>
+            </div>
+        </div>
+
+        <!-- TEAM CODE -->
+        <div class="card">
+            <label><i class="fas fa-users"></i> TEAM CODE</label>
+            <div class="input-box">
+                <input type="number" id="team-code" placeholder="Enter Team Code">
+                <i class="fas fa-paste paste-icon" onclick="pasteText('team-code')"></i>
+            </div>
+        </div>
+
+        <!-- TARGET UIDs -->
+        <div class="card">
+            <label><i class="fas fa-crosshairs"></i> TARGET UIDs</label>
+            <div id="uid-container"></div>
+        </div>
+
+        <!-- EMOTE LIST -->
+        <div class="card">
+            <label><i class="fas fa-radiation"></i> INJECT EMOTE (400+ ITEMS)</label>
+            <div class="emote-grid" id="emote-list"></div>
+        </div>
+
+        <div class="credit">SYSTEM DEVELOPED BY AX ROMJAN HOSSAIN</div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
