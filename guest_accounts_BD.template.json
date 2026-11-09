@@ -1,0 +1,9 @@
+{
+  "accounts": [
+    {
+      "uid": "123456789",
+      "password": "GUEST_PASSWORD",
+      "name": "BD JSON BOT 1"
+    }
+  ]
+}

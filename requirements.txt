@@ -1,0 +1,13 @@
+flask
+requests
+protobuf
+protobuf-decoder
+aiohttp
+pyjwt
+pytz
+psutil
+cfonts
+pycryptodome
+urllib3
+httpx
+google_play_scraper
